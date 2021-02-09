@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="company">
+
+	<select id="getCompanyInfo" resultType="com.project.groupware.model.CompanyVO">
+		SELECT 
+		com_logo AS comLogo,
+		com_name AS comName,
+		com_tel AS comTel,
+		com_fax AS comFax,
+		com_postcode AS comPostcode,
+		com_addr AS comAddr,
+		com_detailaddr AS comDetailAddr,
+		com_extraaddr AS comExtraAddr,
+		com_url AS comURL,
+		com_copy AS comCopy,
+		com_mainmenu AS comMainMenu,
+		com_title AS comTitle,
+		com_subtitle AS comSubTitle 
+		FROM grp_company
+	</select>
+	
+	<update id="ComInfoModify" parameterType="com.project.groupware.model.CompanyVO">
+		UPDATE grp_company SET 
+		com_logo = #{comLogo},
+		com_name = #{comName},
+		com_tel = #{comTel},
+		com_fax = #{comFax},
+		com_postcode = #{comPostcode},
+		com_addr = #{comAddr},
+		com_detailaddr = #{comDetailAddr},
+		com_extraaddr = #{comExtraAddr},
+		com_url = #{comURL},
+		com_copy = #{comCopy},
+		com_mainmenu = #{comMainMenu},
+		com_title = #{comTitle},
+		com_subtitle = #{comSubTitle}
+	</update>
+	
+
+</mapper>

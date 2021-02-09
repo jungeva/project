@@ -1,0 +1,33 @@
+@charset 'utf-8';
+
+* {
+    margin:0;
+    padding:0;
+    box-sizing: border-box;
+}
+
+a {
+    text-decoration:none;
+    color:#333;
+}
+
+ul li {
+    list-style-type: none;
+}
+
+table {
+    border-collapse: collapse; /*테이블 선 한줄*/
+    width:100%;
+}
+
+select, input, textarea, button {
+    border:0;
+    outline:0;
+    vertical-align:top; /*수평정렬*/
+}
+
+input[type="checkbox"] {
+    width:15px;
+    height:15px;
+    vertical-align:-2px;
+}

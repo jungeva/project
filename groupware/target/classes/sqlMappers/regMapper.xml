@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="register">
+	
+	<select id="getDepartmentList" resultType="com.project.groupware.model.DepartmentVO">
+		SELECT * FROM grp_department
+	</select>
+	
+	<select id="getGradeList" resultType="com.project.groupware.model.GradeVO">
+		SELECT * FROM grp_grade
+	</select>
+	
+	<insert id="setEmpRegister" parameterType="com.project.groupware.model.EmployeeVO">
+		<selectKey keyProperty="ref" order="BEFORE" resultType="int">
+			SELECT IFNULL( max(emp_id)+1, 1) FROM grp_employee
+		</selectKey>	
+	
+		INSERT INTO grp_employee SET 
+		emp_department = #{empDepartmentCode},
+		emp_grade = #{empGradeCode},
+		emp_enterdate = #{empEnterDate},
+		emp_name = #{empName},
+		emp_pwd = #{empPwd},
+		emp_regdate = #{empRegdate},
+		emp_number = CONCAT(#{empNumber}, #{ref})
+	</insert>
+	
+	<select id="getEmpInfo" parameterType="hashmap" resultType="com.project.groupware.model.EmployeeVO">
+		SELECT 
+			emp_id AS empID,
+			emp_number AS empNumber,
+			emp_name AS empName,
+			emp_auth AS empAuth,
+			emp_confirm AS empConfirm,
+			emp_enterdate AS empEnterDate,
+			emp_department AS empDepartmentCode,
+			emp_grade AS empGradeCode,
+			department_name AS empDepartmentName,
+			grade_name AS empGradeName
+		FROM grp_employee LEFT JOIN grp_department ON emp_department = department_id 
+		LEFT JOIN grp_grade ON emp_grade = grade_id 
+		WHERE emp_number =#{empNumber} AND emp_pwd = #{empPwd}
+	</select>
+	
+	<select id="empLoginCheck" parameterType="hashmap" resultType="int">
+		SELECT COUNT(emp_id) FROM grp_employee WHERE emp_number = #{empNumber} AND emp_pwd = #{empPwd}
+	</select>
+	
+</mapper>
+
+
+
+
+
+
+
+
+
+
+
+

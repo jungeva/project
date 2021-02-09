@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="schedule">
+
+	<insert id="setScheduleAdd" parameterType="com.project.groupware.model.ScheduleVO">
+		INSERT INTO grp_schedule SET 
+		startDate = #{startDate},
+		endDate = #{endDate},
+		schContent = #{schContent},
+		empNumber = #{empNumber}
+	</insert>
+	
+	<select id="getScheduleList" resultType="com.project.groupware.model.ScheduleVO">
+		SELECT * FROM grp_schedule
+	</select>
+
+</mapper>

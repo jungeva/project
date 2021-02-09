@@ -1,0 +1,108 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="article">
+
+	<sql id="search">
+		<choose>
+			<when test="words ==''"></when>
+			<when test="searchOpt == 'all'">
+				WHERE writer LIKE CONCAT('%', #{words} ,'%') OR subject LIKE CONCAT('%', #{words} ,'%')
+			</when>
+			<otherwise>
+				WHERE ${searchOpt} LIKE CONCAT('%', #{words} ,'%')
+			</otherwise>
+		</choose>
+	</sql>
+
+	<select id="getBoardInfo" parameterType="String" resultType="com.project.groupware.model.BoardVO">
+		SELECT * FROM grp_board WHERE boardCode = #{boardCode}
+	</select>
+	
+	<select id="getArticleList" resultType="com.project.groupware.model.ArticleVO" parameterType="hashmap">
+		SELECT *, date_format(regdate, '%Y-%m-%d') AS regdate, (SELECT COUNT(*) FROM grp_comment_${boardCode} c where c.aid = a.aid) AS count FROM grp_article_${boardCode} a <include refid="search"></include> ORDER BY division ASC, ref DESC, re_step ASC LIMIT #{start}, #{end}	
+	</select>
+	
+	<select id="getArticleCount" resultType="int" parameterType="hashmap">
+		SELECT COUNT(aid) FROM grp_article_${boardCode} <include refid="search"></include>
+	</select>
+	
+	<select id="totalArticleCnt" resultType="int" parameterType="String">
+		SELECT COUNT(aid) FROM grp_article_${boardCode}
+	</select>
+	
+	<insert id="setArticleAdd" parameterType="com.project.groupware.model.ArticleVO">
+	
+	<selectKey resultType="int" keyProperty="ref" order="BEFORE">
+		SELECT IFNULL( MAX(ref), 0 ) +1 FROM grp_article_${boardCode}
+	</selectKey>
+	
+		INSERT INTO grp_article_${boardCode} SET 
+		division 	= #{division},
+		subject 	= #{subject},
+		writer 		= #{writer},
+		content 	= #{content},
+		regdate 	= now(),
+		fileName 	= #{fileName},
+		fileOriName = #{fileOriName},
+		fileUrl 	= #{fileUrl},
+		ref 		= #{ref},
+		re_step 	= 0,
+		re_level 	= 0  
+	</insert>
+	
+	<!-- 게시글 삭제 -->
+	<delete id="ArticleDeleteOne" parameterType="com.project.groupware.model.ArticleVO">
+		DELETE FROM grp_article_${boardCode} WHERE aid = #{aid}
+	</delete>
+	
+	<!-- 해당 게시글내용 가져오기 -->
+	<select id="getArticleInfo" resultType="com.project.groupware.model.ArticleVO">
+		SELECT * FROM grp_article_${boardCode} WHERE aid= #{aid}
+	</select>
+	
+	<!-- 게시글 수정 -->
+	<update id="setArticleModify" parameterType="com.project.groupware.model.ArticleVO">
+		UPDATE grp_article_${boardCode} SET 
+		division 	= #{division},
+		subject 	= #{subject},
+		content 	= #{content},
+		regdate 	= now(),
+		fileName 	= #{fileName},
+		fileOriName = #{fileOriName},
+		fileUrl 	= #{fileUrl},
+		ref 		= #{ref} 
+		WHERE aid = #{aid}
+	</update>
+	
+	<!-- 조회수 -->
+	<update id="hitUp" parameterType="hashmap">
+		UPDATE grp_article_${boardCode} SET hit = hit+1 WHERE aid = #{aid}
+	</update>
+	
+	<!-- 게시글답글 등록 -->
+	<insert id="setArticleReply" parameterType="com.project.groupware.model.ArticleVO">
+		INSERT INTO grp_article_${boardCode} SET 
+		division 	= #{division},
+		subject 	= #{subject},
+		writer 		= #{writer},
+		content 	= #{content},
+		regdate 	= now(),
+		fileName 	= #{fileName},
+		fileOriName = #{fileOriName},
+		fileUrl 	= #{fileUrl},
+		ref 		= #{ref},
+		re_step 	= #{re_step} + 1,
+		re_level 	= #{re_step} + 1
+	</insert>
+	
+	<!-- 게시글 답글 순서 정렬 -->
+	<update id="articleReplyOrder" parameterType="com.project.groupware.model.ArticleVO">
+		UPDATE grp_article_${boardCode} SET re_step = re_step+1 WHERE ref = #{ref} AND re_step > #{re_step}
+	</update>
+	
+	<!-- 게시글 답글 정보가져오기 -->
+	<select id="articleReplyInfo" parameterType="hashmap" resultType="com.project.groupware.model.ArticleVO">
+		SELECT * FROM grp_article_${boardCode} WHERE aid = #{aid}
+	</select>
+
+</mapper>

@@ -1,0 +1,146 @@
+
+<부서명>
+
+use groupware;
+
+create table grp_department(
+department_id varchar(5) not null,
+department_name varchar(20) not null
+);
+
+insert into grp_department values('100','관리부');
+insert into grp_department values('200','기획부');
+insert into grp_department values('300','인사부');
+insert into grp_department values('400','영업부');
+insert into grp_department values('500','생산부');
+insert into grp_department values('600','자재부');
+
+
+<직책>
+
+use groupware;
+
+create table grp_grade(
+grade_id varchar(5) not null,
+grade_name varchar(20) not null
+);
+
+insert into grp_grade values('6','부장');
+insert into grp_grade values('5','팀장');
+insert into grp_grade values('4','과장');
+insert into grp_grade values('3','대리');
+insert into grp_grade values('2','주임');
+insert into grp_grade values('1','사원');
+
+
+<회원가입 저장>
+use groupware;
+
+create table grp_employee(
+emp_id int not null auto_increment,
+emp_department varchar(20) not null,
+emp_grade varchar(15) not null,
+emp_number varchar(20) not null,
+emp_enterdate varchar(10),
+emp_name varchar(10) not null,
+emp_pwd varchar(15) not null,
+emp_regdate date,
+emp_head char(1) default 'N',
+emp_auth int default 1,
+emp_confirm char(1) default 'N',
+emp_photo varchar(100),
+emp_retired char(1) default 'N',
+emp_retiredDate datetime,
+primary key(emp_id)
+);
+
+<회원 추가정보 저장>
+create table grp_employee_info(
+emp_oid int not null auto_increment,
+primary key(emp_oid),
+emp_engname char(20),
+emp_gender char(1),
+emp_birth char(10),
+emp_tel char(14),
+emp_emergencytel char(14),
+emp_cp char(14),
+emp_extension char(14),
+emp_married char(2),
+emp_postcode char(8),
+emp_addr varchar(50),
+emp_detailaddr varchar(20),
+emp_extraaddr varchar(30),
+emp_email varchar(30),
+emp_recruit char(10),
+emp_employment char(10),
+emp_military char(5),
+emp_speciality char(5),
+emp_disability char(5),
+emp_license1 varchar(20),
+emp_license2 varchar(20),
+emp_language1 varchar(20),
+emp_language2 varchar(20),
+emp_rewardpunish1 varchar(20),
+emp_rewardpunish2 varchar(20),
+emp_comment text,
+emp_photo varchar(300),
+emp_number varchar(20) not null, 
+emp_thumPhoto varchar(300),
+emp_id_fk int
+);
+
+
+< 퇴직자 테이블 >
+create table retired_employee(
+retired_id int not null auto_increment, 
+retired_department varchar(20),
+retired_empnumber varchar(20),
+retired_empname varchar(10),
+retired_grade varchar(20),
+retired_enterdate varchar(10),
+retired_retireddate date,
+retired_retiredstate char(1) default 'Y',
+primary key(retired_id)
+);
+
+<게시판 테이블>
+create table grp_board(
+bid int not null auto_increment primary key,
+boardGrp varchar(5),
+boardCode varchar(20) not null,
+boardColor varchar(20),
+boardMaker varchar(20),
+boardTitle varchar(255) not null,
+boardType char(1),
+boardRead char(1),
+boardWrite char(1),
+boardReply char(1),
+boardDownload char(1),
+boardRegdate date
+);
+
+<설문조사 테이블>
+create table grp_survey (
+survey_id int not null auto_increment,
+primary key(survey_id),
+survey_state char(3),
+survey_result char(1),
+survey_subject varchar(100),
+survey_startDate varchar(11),
+survey_endDate varchar(11),
+survey_writer varchar(10),
+survey_example varchar(100),
+survey_ex_cnt varchar(20),
+survey_regdate date
+);
+
+create table grp_schedule (
+sch_id int not null auto_increment,
+primary key(sch_id),
+startDate char(11),
+endDate char(11),
+schContent varchar(255),
+empNumber varchar(20)
+);
+
+

@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="main">
+
+	<!-- 설무조사 정보가져오기 -->
+	<select id="getSurveyInfo" resultType="com.project.groupware.model.SurveyVO">
+		SELECT 
+		survey_id AS surveyID,
+		survey_state AS surveyState,
+		survey_result AS surveyResult,
+		survey_subject AS surveySubject,
+		survey_startDate AS surveyStartDate,
+		survey_endDate AS surveyEndDate,
+		survey_writer AS surveyWriter,
+		survey_example AS surveyEx,
+		survey_ex_cnt AS surveyExcnt,
+		survey_regdate AS surveyRegdate 
+		FROM grp_survey WHERE survey_state = 'open' ORDER BY surveyStartDate DESC LIMIT 2 
+	</select>
+
+</mapper>

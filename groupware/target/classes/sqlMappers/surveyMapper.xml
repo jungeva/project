@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="survey">
+
+	<insert id="getSurveyCreate" parameterType="com.project.groupware.model.SurveyVO">
+		INSERT INTO grp_survey SET 
+		survey_state = #{surveyState},
+		survey_result = #{surveyResult},
+		survey_subject = #{surveySubject},
+		survey_startDate = #{surveyStartDate},
+		survey_endDate = #{surveyEndDate},
+		survey_writer = #{surveyWriter},
+		survey_example = #{surveyEx},
+		survey_ex_cnt = #{surveyExcnt},
+		survey_regdate = now()
+	</insert>
+	
+	<select id="getSurveyOpen" resultType="com.project.groupware.model.SurveyVO" parameterType="hashmap">
+		SELECT 
+		survey_id AS surveyID,
+		survey_state AS surveyState,
+		survey_result AS surveyResult,
+		survey_subject AS surveySubject,
+		survey_startDate AS surveyStartDate,
+		survey_endDate AS surveyEndDate,
+		survey_writer AS surveyWriter,
+		survey_example AS surveyEx,
+		survey_ex_cnt AS surveyExcnt,
+		survey_regdate AS surveyRegdate 
+		FROM grp_survey ORDER BY survey_state DESC, survey_endDate DESC LIMIT #{start}, #{end}
+	</select>
+	
+	<select id="getSurveyOne" resultType="com.project.groupware.model.SurveyVO" parameterType="int">
+		SELECT 
+		survey_id AS surveyID,
+		survey_state AS surveyState,
+		survey_result AS surveyResult,
+		survey_subject AS surveySubject,
+		survey_startDate AS surveyStartDate,
+		survey_endDate AS surveyEndDate,
+		survey_writer AS surveyWriter,
+		survey_example AS surveyEx,
+		survey_ex_cnt AS surveyExcnt,
+		survey_regdate AS surveyRegdate 
+		FROM grp_survey WHERE survey_id = #{surveyID} 
+	</select>
+
+	<!-- 투표하기 -->
+	<update id="doVote" parameterType="com.project.groupware.model.SurveyVO">
+		UPDATE grp_survey SET survey_ex_cnt = #{surveyExcnt} WHERE survey_id = #{surveyID}
+	</update>
+	
+	<delete id="surveyDelete" parameterType="int">
+		DELETE FROM grp_survey WHERE survey_id =#{surveyID}
+	</delete>
+	
+	<!-- 설문마감 -->
+	<update id="setSurveyEnd" parameterType="int">
+		UPDATE grp_survey SET survey_state = 'close' WHERE survey_id = #{surveyID}
+	</update>
+	
+	<update id="setStateModify" parameterType="com.project.groupware.model.SurveyVO">
+		UPDATE grp_survey SET survey_state = #{surveyState} WHERE survey_id = #{surveyID}
+	</update>
+	
+	<select id="openCount" resultType="int">
+		SELECT COUNT(survey_id) FROM grp_survey WHERE survey_state = 'open'
+	</select>
+	
+	<select id="closeCount" resultType="int">
+		SELECT COUNT(survey_id) FROM grp_survey WHERE survey_state = 'close'
+	</select>
+ </mapper>

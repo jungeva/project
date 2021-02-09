@@ -1,0 +1,97 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="board">
+
+	<sql id="search">
+		<choose>
+			<when test="words ==''"></when>
+			<when test="searchOpt == 'all'">
+				AND (department_name LIKE CONCAT('%', #{words}, '%') OR boardTitle LIKE CONCAT('%', #{words}, '%')) 
+			</when>
+			<otherwise>
+				AND ${searchOpt} LIKE CONCAT('%', #{words}, '%')
+			</otherwise>
+		</choose>
+	</sql>
+
+	<select id="getBoardList" resultType="com.project.groupware.model.BoardVO" parameterType="hashmap">
+		SELECT * FROM grp_board A, grp_department B WHERE A.boardGrp = B.department_id 
+		<include refid="search"></include> ORDER BY bid DESC LIMIT #{start}, #{end}		
+	</select>
+
+	<insert id="setBoard" parameterType="com.project.groupware.model.BoardVO">
+		INSERT INTO grp_board SET
+			boardGrp = #{boardGrp},
+			boardCode = #{boardCode},
+			boardColor = #{boardColor},
+			boardMaker = #{boardMaker},
+			boardTitle = #{boardTitle},
+			boardType = #{boardType},
+			boardRead = #{boardRead},
+			boardWrite = #{boardWrite},
+			boardReply = #{boardReply},
+			boardDownload = #{boardDownload},
+			boardRegdate = now()
+	</insert>
+	
+	<!-- 게시판생성 -->
+	<insert id="createArticleTbl">
+		${str}
+	</insert>
+	
+	<!-- 댓글게시판생성 -->
+	<insert id="createCommentTbl">
+		${str}
+	</insert>
+	
+	<!-- 코드중복체크 -->
+	<select id="boardCodeChk" resultType="int" parameterType="String">
+		SELECT COUNT(boardCode) FROM grp_board WHERE boardCode = #{boardCode} 
+	</select>
+	 
+	<!-- 게시물 삭제 -->
+	<delete id="boardDelete" parameterType="String">
+		DELETE FROM grp_board WHERE boardCode = #{boardCode}
+	</delete>
+	
+	<delete id="boardDeleteAll" parameterType="String">
+		DELETE FROM grp_board WHERE boardCode = #{boardCode}
+	</delete>
+	
+	<insert id="dropArticleTbl">
+		${str}
+	</insert>
+	
+	<insert id="dropCommentTbl">
+		${str}
+	</insert>
+	
+	<!-- 내가 선택한 테이블 정보가져오기 -->
+	<select id="getBoardInfoOne" resultType="com.project.groupware.model.BoardVO" parameterType="String">
+		SELECT * FROM grp_board WHERE boardCode = #{boardCode}
+	</select>
+	
+	<!-- board 수정하기 -->
+	<update id="setBoardModify" parameterType="com.project.groupware.model.BoardVO">
+		UPDATE grp_board SET 
+			boardGrp = #{pop_boardGrp},
+			boardCode = #{pop_boardCode},
+			boardColor = #{pop_boardColor},
+			boardMaker = #{pop_boardMaker},
+			boardTitle = #{pop_boardTitle},
+			boardType = #{pop_boardType},
+			boardRead = #{pop_boardRead},
+			boardWrite = #{pop_boardWrite},
+			boardReply = #{pop_boardReply},
+			boardDownload = #{pop_boardDownload},
+			boardRegdate = now()
+		WHERE boardCode = #{pop_boardCode}
+	</update>
+	
+	<select id="getBoardCount" resultType="int" parameterType="hashmap">
+		SELECT COUNT(bid) FROM grp_board A, grp_department B WHERE A.boardGrp = B.department_id <include refid="search"></include>
+	</select>
+	
+	
+	
+</mapper>

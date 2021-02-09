@@ -1,0 +1,270 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="employee">
+
+	<sql id="search">
+		<choose>
+			<when test="words ==''"></when>
+			<when test="searchOpt == 'all'">
+				AND (emp_name LIKE CONCAT('%',#{words},'%') OR emp_number LIKE CONCAT('%',#{words},'%')) 
+			</when>
+			<otherwise>
+				AND ${searchOpt} LIKE CONCAT('%',#{words},'%')
+			</otherwise>
+		</choose>
+	</sql>
+
+	<select id="getEmployeeList" resultType="com.project.groupware.model.EmployeeVO" parameterType="hashmap">
+		SELECT
+			emp_id AS empID,
+			emp_department AS empDepartmentCode,
+			D.department_name AS empDepartmentName,
+			emp_grade AS empGradeCode,
+			G.grade_name AS empGradeName,
+			emp_number AS empNumber,
+			emp_name AS empName,
+			emp_head AS empHead,
+			emp_auth AS empAuth,
+			emp_enterdate AS empEnterDate,
+			emp_confirm AS empConfirm,
+			emp_retired AS empRetired,
+			emp_retireddate AS empRetiredDate
+		FROM grp_employee E, grp_department D, grp_grade G
+		WHERE E.emp_department = D.department_id AND E.emp_grade = G.grade_id AND E.emp_retired = 'N' <include refid="search"></include>
+		ORDER BY emp_enterdate DESC LIMIT #{start}, #{end}
+	</select>
+	
+	<!-- 총직원수 -->
+	<select id="getEmployeeCount" resultType="int">
+		SELECT COUNT(emp_id) FROM grp_employee E, grp_department D, grp_grade G
+		WHERE E.emp_department = D.department_id AND E.emp_grade = G.grade_id AND E.emp_retired = 'N'
+	</select>
+	
+	<!-- 검색된 직원수 -->
+	<select id="EmployeeCountAfter" resultType="int" parameterType="hashmap">
+		SELECT COUNT(emp_id) FROM grp_employee E, grp_department D, grp_grade G
+		WHERE E.emp_department = D.department_id AND E.emp_grade = G.grade_id AND E.emp_retired = 'N' <include refid="search"></include>
+	</select>
+	
+		
+	<!-- 부서장변경 -->
+	<update id="setEmployeeHeadChange" parameterType="hashmap">
+		UPDATE grp_employee SET emp_head = #{empHead} WHERE emp_id = #{empID}
+	</update>
+	
+	<!-- 승인여부 변경 -->
+	<update id="setEmployeeConfirmChange" parameterType="hashmap">
+		UPDATE grp_employee SET emp_confirm = #{empConfirm} WHERE emp_id = #{empID}
+	</update>
+	
+	<!-- 권한변경 -->
+	<update id="setEmployeeAuthChange" parameterType="hashmap">
+		UPDATE grp_employee SET emp_auth = #{empAuth} WHERE emp_id = #{empID}
+	</update>
+	
+	<!-- 사원정보가져오기 -->
+	<select id="getEmloyeeOne" resultType="com.project.groupware.model.EmployeeVO" parameterType="int" >
+		SELECT
+			emp_id AS empID,
+			emp_department AS empDepartmentCode,
+			D.department_name AS empDepartmentName,
+			emp_grade AS empGradeCode,
+			G.grade_name AS empGradeName,
+			emp_number AS empNumber,
+			emp_name AS empName,
+			emp_enterdate AS empEnterDate
+		FROM grp_employee E, grp_department D, grp_grade G
+		WHERE E.emp_department = D.department_id AND E.emp_grade = G.grade_id AND emp_id = #{empID}
+	</select>
+	
+	<!-- 퇴사자 명단가져오기 -->
+	<select id="getEmployeeRetiredList" resultType="com.project.groupware.model.EmployeeVO" parameterType="hashmap">
+		SELECT 
+			emp_id AS empID,
+			emp_department AS empDepartmentCode,
+			D.department_name AS empDepartmentName,
+			emp_grade AS empGradeCode,
+			G.grade_name AS empGradeName,
+			emp_number AS empNumber,
+			emp_name AS empName,
+			emp_head AS empHead,
+			emp_auth AS empAuth,
+			emp_enterdate AS empEnterDate,
+			emp_retired AS empRetired,
+			emp_retireddate AS empRetiredDate
+		FROM grp_employee E, grp_department D, grp_grade G
+		WHERE E.emp_department = D.department_id AND E.emp_grade = G.grade_id AND E.emp_retired = 'Y' <include refid="search"></include>
+		ORDER BY empRetiredDate DESC LIMIT #{start}, #{end}
+	</select>
+	
+	<!-- 퇴사자 명단 넘기기-->
+	<update id="getEmployeeRetired" parameterType="int">
+		UPDATE grp_employee SET emp_retireddate = now(), emp_retired = 'Y' WHERE emp_id = #{empID}
+	</update>
+	
+	<!-- 검색된 퇴사직원수 -->
+	<select id="retiredEmployeeCount" resultType="int" parameterType="hashmap">
+		SELECT COUNT(emp_id) FROM grp_employee E, grp_department D, grp_grade G
+		WHERE E.emp_department = D.department_id AND E.emp_grade = G.grade_id AND E.emp_retired = 'Y' <include refid="search"></include>
+	</select>
+			
+	<!-- 체크한 직원 퇴사처리 -->
+	<update id="setEmpRetiredAll" parameterType="int">
+		UPDATE grp_employee SET emp_retireddate = now(), emp_retired = 'Y' WHERE emp_id = #{empID}
+	</update>
+	
+	<!-- 퇴직자명단 삭제 -->
+	<delete id="setEmpDelete" parameterType="int">
+		DELETE FROM grp_employee WHERE emp_retired = 'Y' AND emp_id = #{empID}
+	</delete>
+	
+	<!-- 퇴직자명단 전체삭제 -->
+	<delete id="setEmpDeleteAll" parameterType="int">
+		DELETE FROM grp_employee WHERE emp_retired = 'Y' AND emp_id = #{empID}
+	</delete>
+	
+	<!-- 퇴직자 복귀 -->
+	<update id="setEmployeeComback" parameterType="int">
+		UPDATE grp_employee SET emp_retired = 'N', emp_enterdate = now() WHERE emp_id = #{empID}
+	</update>
+	
+	<!-- 모달창 정보가져가기 -->
+	<select id="getDetailInfo" parameterType="int" resultType="com.project.groupware.model.EmployeeVO">
+		SELECT 
+			emp_id AS empID,
+			department_name AS empDepartmentName,
+			grade_name AS empGradeName,
+			E.emp_number AS empNumber,
+			emp_name AS empName,
+			emp_enterdate AS empEnterDate,
+			emp_retired AS empRetired,
+			emp_tel AS empTel,
+			emp_cp AS empCP,
+			emp_extension AS empExtension,
+			emp_engName AS empEngName,
+			emp_emergencytel AS empEmergencyTel,
+			emp_email AS empEmail,
+			emp_postcode AS empPostcode,
+			I.emp_addr AS empAddr,
+			emp_detailaddr AS empDetailAddr,
+			emp_extraaddr AS empExtraAddr,
+			emp_license1 AS empLicense1,
+			emp_language1 AS empLanguage1,
+			emp_comment AS empComment,
+			I.emp_photo AS empPhoto,
+			I.emp_thumPhoto AS empThumPhoto,
+			emp_retireddate AS empRetiredDate 
+		FROM grp_employee E LEFT JOIN grp_department D ON E.emp_department = department_id
+						    LEFT JOIN grp_grade G ON E.emp_grade = G.grade_id 
+						    LEFT JOIN grp_employee_info I ON E.emp_number = I.emp_number 
+		WHERE emp_id = #{empID} 
+	</select>
+	
+	<!-- 회원 상세정보 저장 -->
+	<insert id="setEmpInfoOthers" parameterType="com.project.groupware.model.EmployeeVO" >
+		
+		INSERT INTO grp_employee_info SET 
+			emp_engname = #{empEngName},
+			emp_gender = #{empGender},
+			emp_birth = #{empBirth},
+			emp_tel = #{empTel},
+			emp_emergencytel = #{empEmergencyTel},
+			emp_cp = #{empCp},
+			emp_extension = #{empExtension},
+			emp_married = #{empMarried},
+			emp_postcode = #{empPostcode},
+			emp_detailaddr = #{empDetailAddr},
+			emp_extraaddr = #{empExtraAddr},
+			emp_addr = #{empAddr},
+			emp_email = #{empEmail},
+			emp_recruit = #{empRecruit},
+			emp_employment = #{empEmployment},
+			emp_military = #{empMilitary},
+			emp_speciality = #{empSpeciality},
+			emp_disability = #{empDisability},
+			emp_license1 = #{empLicense1},
+			emp_license2 = #{empLicense2},
+			emp_language1 = #{empLanguage1},
+			emp_language2 = #{empLanguage2},
+			emp_rewardpunish1 = #{empRewardPunish1},
+			emp_rewardpunish2 = #{empRewardPunish2},
+			emp_comment = #{empComment},
+			emp_photo = #{empPhoto},
+			emp_thumPhoto = #{empThumPhoto},
+			emp_number = #{empNumber},
+			emp_id_fk = #{empID}
+	</insert>
+	
+	<!-- 상세정보중복확인 -->
+	<select id="registerChk" resultType="int" parameterType="int">
+		SELECT COUNT(emp_id_fk) FROM grp_employee_info where emp_id_fk= #{empID}
+	</select>
+	
+	<!-- 정보 수정 -->
+	<update id="registerModeify" parameterType="com.project.groupware.model.EmployeeVO">
+		UPDATE grp_employee_info SET
+			emp_engname = #{empEngName},
+			emp_gender = #{empGender},
+			emp_birth = #{empBirth},
+			emp_tel = #{empTel},
+			emp_emergencytel = #{empEmergencyTel},
+			emp_cp = #{empCp},
+			emp_extension = #{empExtension},
+			emp_married = #{empMarried},
+			emp_postcode = #{empPostcode},
+			emp_detailaddr = #{empDetailAddr},
+			emp_extraaddr = #{empExtraAddr},
+			emp_addr = #{empAddr},
+			emp_email = #{empEmail},
+			emp_recruit = #{empRecruit},
+			emp_employment = #{empEmployment},
+			emp_military = #{empMilitary},
+			emp_speciality = #{empSpeciality},
+			emp_disability = #{empDisability},
+			emp_license1 = #{empLicense1},
+			emp_license2 = #{empLicense2},
+			emp_language1 = #{empLanguage1},
+			emp_language2 = #{empLanguage2},
+			emp_rewardpunish1 = #{empRewardPunish1},
+			emp_rewardpunish2 = #{empRewardPunish2},
+			emp_comment = #{empComment},
+			emp_photo = #{empPhoto},
+			emp_thumPhoto = #{empThumPhoto} 
+		WHERE emp_id_fk = #{empID}
+	</update>
+	
+	<!-- 사원 상세정보 가져오기 -->
+	<select id="getEmployeeOthers" resultType="com.project.groupware.model.EmployeeVO" parameterType="int">
+		SELECT 
+			emp_engname AS empEngName,
+			emp_gender AS empGender,
+			emp_birth AS empBirth,
+			emp_tel AS empTel,
+			emp_emergencytel AS empEmergencyTel,
+			emp_cp AS empCp,
+			emp_extension AS empExtension,
+			emp_married AS empMarried,
+			emp_postcode AS empPostcode,
+			emp_detailaddr AS empDetailAddr,
+			emp_extraaddr AS empExtraAddr,
+			emp_addr AS empAddr,
+			emp_email AS empEmail,
+			emp_recruit AS empRecruit,
+			emp_employment AS empEmployment,
+			emp_military AS empMilitary,
+			emp_speciality AS empSpeciality,
+			emp_disability AS empDisability,
+			emp_license1 AS empLicense1,
+			emp_license2 AS empLicense2,
+			emp_language1 AS empLanguage1,
+			emp_language2 AS empLanguage2,
+			emp_rewardpunish1 AS empRewardPunish1,
+			emp_rewardpunish2 AS empRewardPunish2,
+			emp_id_fk AS empIDFK,
+			emp_comment AS empComment,
+			I.emp_photo AS empPhoto,
+			I.emp_thumPhoto AS empThumPhoto
+		FROM grp_employee_info I LEFT JOIN grp_employee E ON emp_id_fk = emp_id
+		WHERE  emp_id= #{empID}
+	</select>
+</mapper>
